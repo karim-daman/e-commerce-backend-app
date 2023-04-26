@@ -22,7 +22,7 @@ const cartsRoutes = require('./routes/carts')
 // routers
 const api = process.env.API_URL
 
-app.get(process.env.API_URL, (req, res) => {
+app.get('/', (req, res) => {
     res.status(200).send('e-commerce-backend-app')
 })
 app.use(`${api}/categories`, categoriesRoutes)
