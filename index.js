@@ -22,6 +22,9 @@ const cartsRoutes = require('./routes/carts')
 // routers
 const api = process.env.API_URL
 
+app.get(process.env.API_URL, (req, res) => {
+    res.status(200).send('e-commerce-backend-app')
+})
 app.use(`${api}/categories`, categoriesRoutes)
 app.use(`${api}/products`, productsRoutes)
 app.use(`${api}/users`, usersRoutes)
@@ -52,6 +55,7 @@ const connectDB = async () => {
 
 //Connect to the database before listening
 connectDB().then(() => {
+    console.log('server running on http://localhost:3000' + process.env.API_URL)
     app.listen(PORT, () => {
         console.log('listening for requests')
     })
