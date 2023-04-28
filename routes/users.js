@@ -16,7 +16,7 @@ router.get(`/:id`, async (req, res) => {
         res.status(500).json({
             message: 'catogory was not found.',
         })
-    res.status(200).send(`<pre>${JSON.stringify(user, null, 2)}</pre>`)
+    res.status(200).send(user)
 })
 
 router.post(`/`, async (req, res) => {

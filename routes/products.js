@@ -39,15 +39,14 @@ router.get(`/`, async (req, res) => {
     const productList = await Product.find(filter).populate('category') //.select('name image -_id')
     if (!productList) res.status(500).json({ success: false })
     // res.send(productList)
-    res.send(`<pre>${JSON.stringify(productList, null, 2)}</pre>`)
+    res.send(productList)
 })
 
 router.get(`/:id`, async (req, res) => {
     const product = await Product.findById(req.params.id).populate('category')
     if (!product)
         res.status(500).json({ success: false, message: 'product not found.' })
-    // res.send(product)
-    res.send(`<pre>${JSON.stringify(product, null, 2)}</pre>`)
+    res.send(product)
 })
 
 router.delete('/:id', (req, res) => {
@@ -166,8 +165,7 @@ router.get(`/get/count`, async (req, res) => {
 router.get(`/get/featured/`, async (req, res) => {
     const products = await Product.find({ isFeatured: true })
     if (!products) res.status(500).json({ success: false })
-    // res.send(products)
-    res.send(`<pre>${JSON.stringify(products, null, 2)}</pre>`)
+    res.send(products)
 })
 
 router.get(`/get/featured/:count`, async (req, res) => {
@@ -176,8 +174,7 @@ router.get(`/get/featured/:count`, async (req, res) => {
         parseInt(count)
     )
     if (!products) res.status(500).json({ success: false })
-    // res.send(products)
-    res.send(`<pre>${JSON.stringify(products, null, 2)}</pre>`)
+    res.send(products)
 })
 
 module.exports = router
