@@ -5,7 +5,7 @@ const router = express.Router()
 router.get(`/`, async (req, res) => {
     const categoryList = await Category.find()
     if (!categoryList) res.status(500).json({ success: false })
-    res.status(200).send(categoryList)
+    res.status(200).send(`<pre>${JSON.stringify(categoryList, null, 2)}</pre>`)
 })
 
 router.get(`/:id`, async (req, res) => {
@@ -14,7 +14,7 @@ router.get(`/:id`, async (req, res) => {
         res.status(500).json({
             message: 'catogory was not found.',
         })
-    res.status(200).send(category)
+    res.status(200).send(`<pre>${JSON.stringify(category, null, 2)}</pre>`)
 })
 
 router.put(`/:id`, async (req, res) => {

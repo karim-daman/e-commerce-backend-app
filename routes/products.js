@@ -3,6 +3,31 @@ const { Product } = require('../models/product')
 const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
+const multer = require('multer')
+
+const FILE_TYPE_MAP = {
+    'image/png': 'png',
+    'image/jpeg': 'jpeg',
+    'image/jpg': 'jpg',
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const isValid = FILE_TYPE_MAP[file.mimetype]
+        let uploadError = new Error('invalid image type')
+
+        if (isValid) uploadError = null
+        cb(uploadError, 'public/uploads')
+    },
+    filename: function (req, file, cb) {
+        const fileName = file.originalname.split(' ').join('_')
+        const extension = FILE_TYPE_MAP[file.mimetype]
+        // cb(null, `${fileName}_${Date.now()}.${extension}`)
+        cb(null, `${Date.now()}_${fileName}`)
+    },
+})
+
+const uploadOptions = multer({ storage: storage })
 
 router.get(`/`, async (req, res) => {
     // http://localhost:3000/api/v1/products?categories=2312,41241 //<- query
@@ -13,14 +38,16 @@ router.get(`/`, async (req, res) => {
 
     const productList = await Product.find(filter).populate('category') //.select('name image -_id')
     if (!productList) res.status(500).json({ success: false })
-    res.send(productList)
+    // res.send(productList)
+    res.send(`<pre>${JSON.stringify(productList, null, 2)}</pre>`)
 })
 
 router.get(`/:id`, async (req, res) => {
     const product = await Product.findById(req.params.id).populate('category')
     if (!product)
         res.status(500).json({ success: false, message: 'product not found.' })
-    res.send(product)
+    // res.send(product)
+    res.send(`<pre>${JSON.stringify(product, null, 2)}</pre>`)
 })
 
 router.delete('/:id', (req, res) => {
@@ -71,15 +98,21 @@ router.put(`/:id`, async (req, res) => {
     res.send(product)
 })
 
-router.post(`/`, async (req, res) => {
+router.post(`/`, uploadOptions.single('image'), async (req, res) => {
     const category = await Category.findById(req.body.category)
     if (!category) return res.status(400).send('invalid category')
+    if (!req.file) return res.status(400).send('No image in the request')
+    const imagePath = `${req.protocol}://${req.get(
+        'host'
+    )}/${req.file.path.replace(/\\/g, '/')}`
+
+    console.log(req.file.path)
 
     let product = new Product({
         name: req.body.name,
         description: req.body.description,
         richDescription: req.body.richDescription,
-        image: req.body.image,
+        image: imagePath,
         brand: req.body.brand,
         price: req.body.price,
         category: req.body.category,
@@ -94,6 +127,36 @@ router.post(`/`, async (req, res) => {
     res.send(product)
 })
 
+router.put(
+    `/gallery/:id`,
+    uploadOptions.array('images', 10),
+    async (req, res) => {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            res.status(400).send('invalid product id')
+        }
+        const files = req.files
+        let imagePaths = []
+        if (files)
+            files.map((file) => {
+                imagePaths.push(
+                    `${req.protocol}://${req.get('host')}/${file.path.replace(
+                        /\\/g,
+                        '/'
+                    )}`
+                )
+            })
+        const product = await Product.findByIdAndUpdate(
+            req.params.id,
+            {
+                images: imagePaths,
+            },
+            { new: true }
+        )
+        if (!product) return res.status(500).send('product cannot be updated!')
+        res.send(product)
+    }
+)
+
 router.get(`/get/count`, async (req, res) => {
     const productCount = await Product.countDocuments()
     if (!productCount) res.status(500).json({ success: false })
@@ -103,7 +166,8 @@ router.get(`/get/count`, async (req, res) => {
 router.get(`/get/featured/`, async (req, res) => {
     const products = await Product.find({ isFeatured: true })
     if (!products) res.status(500).json({ success: false })
-    res.send(products)
+    // res.send(products)
+    res.send(`<pre>${JSON.stringify(products, null, 2)}</pre>`)
 })
 
 router.get(`/get/featured/:count`, async (req, res) => {
@@ -112,7 +176,8 @@ router.get(`/get/featured/:count`, async (req, res) => {
         parseInt(count)
     )
     if (!products) res.status(500).json({ success: false })
-    res.send(products)
+    // res.send(products)
+    res.send(`<pre>${JSON.stringify(products, null, 2)}</pre>`)
 })
 
 module.exports = router
