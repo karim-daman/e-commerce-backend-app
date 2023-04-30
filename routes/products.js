@@ -97,34 +97,88 @@ router.put(`/:id`, async (req, res) => {
     res.send(product)
 })
 
-router.post(`/`, uploadOptions.single('image'), async (req, res) => {
-    const category = await Category.findById(req.body.category)
-    if (!category) return res.status(400).send('invalid category')
-    if (!req.file) return res.status(400).send('No image in the request')
-    const imagePath = `${req.protocol}://${req.get(
-        'host'
-    )}/${req.file.path.replace(/\\/g, '/')}`
+// router.post(`/`, uploadOptions.single('image'), async (req, res) => {
+//     const category = await Category.findById(req.body.category)
+//     if (!category) return res.status(400).send('invalid category')
+//     if (!req.file) return res.status(400).send('No image in the request')
+//     const imagePath = `${req.protocol}://${req.get(
+//         'host'
+//     )}/${req.file.path.replace(/\\/g, '/')}`
 
-    console.log(req.file.path)
+//     console.log(req.file.path)
 
-    let product = new Product({
-        name: req.body.name,
-        description: req.body.description,
-        richDescription: req.body.richDescription,
-        image: imagePath,
-        brand: req.body.brand,
-        price: req.body.price,
-        category: req.body.category,
-        countInStock: req.body.countInStock,
-        rating: req.body.rating,
-        numReviews: req.body.numReviews,
-        isFeatured: req.body.isFeatured,
-    })
+//     let product = new Product({
+//         name: req.body.name,
+//         description: req.body.description,
+//         richDescription: req.body.richDescription,
+//         image: imagePath,
+//         brand: req.body.brand,
+//         price: req.body.price,
+//         category: req.body.category,
+//         countInStock: req.body.countInStock,
+//         rating: req.body.rating,
+//         numReviews: req.body.numReviews,
+//         isFeatured: req.body.isFeatured,
+//     })
 
-    product = await product.save()
-    if (!product) return res(500).send('cannot create product.')
-    res.send(product)
-})
+//     product = await product.save()
+//     if (!product) return res(500).send('cannot create product.')
+//     res.send(product)
+// })
+
+router.post(
+    `/`,
+    uploadOptions.fields([
+        { name: 'image', maxCount: 1 },
+        { name: 'images', maxCount: 10 },
+    ]),
+    async (req, res) => {
+        // if (!mongoose.isValidObjectId(req.params.id)) {
+        //     res.status(400).send('invalid product id')
+        // }
+        const files = req.files.images
+        let imagePaths = []
+        if (files)
+            files.map((file) => {
+                imagePaths.push(
+                    `${req.protocol}://${req.get('host')}/${file.path.replace(
+                        /\\/g,
+                        '/'
+                    )}`
+                )
+            })
+
+        const category = await Category.findById(req.body.category)
+        if (!category) return res.status(400).send('invalid category')
+
+        if (!req.files.image[0].path) {
+            console.log(req.files.image[0].path)
+            return res.status(400).send('No image in the request')
+        }
+        const imagePath = `${req.protocol}://${req.get(
+            'host'
+        )}/${req.files.image[0].path.replace(/\\/g, '/')}`
+
+        let product = new Product({
+            name: req.body.name,
+            description: req.body.description,
+            richDescription: req.body.richDescription,
+            image: imagePath,
+            images: imagePaths,
+            brand: req.body.brand,
+            price: req.body.price,
+            category: req.body.category,
+            countInStock: req.body.countInStock,
+            rating: req.body.rating,
+            numReviews: req.body.numReviews,
+            isFeatured: req.body.isFeatured,
+        })
+
+        product = await product.save()
+        if (!product) return res(500).send('cannot create product.')
+        res.send(product)
+    }
+)
 
 router.put(
     `/gallery/:id`,
