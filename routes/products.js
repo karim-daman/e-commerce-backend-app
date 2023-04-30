@@ -136,6 +136,9 @@ router.post(
         // if (!mongoose.isValidObjectId(req.params.id)) {
         //     res.status(400).send('invalid product id')
         // }
+        const category = await Category.findById(req.body.category)
+        if (!category) return res.status(400).send('invalid category')
+
         const files = req.files.images
         let imagePaths = []
         if (files)
@@ -147,9 +150,6 @@ router.post(
                     )}`
                 )
             })
-
-        const category = await Category.findById(req.body.category)
-        if (!category) return res.status(400).send('invalid category')
 
         if (!req.files.image[0].path) {
             console.log(req.files.image[0].path)
