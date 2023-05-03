@@ -308,30 +308,21 @@ router.post(`/`, async (req, res) => {
                 })
                 .promise()
                 .then((res) => {
-                    return res.send(res)
-
-                    if (res) {
-                        // console.log(
-                        //     'Successfully uploaded data to ' +
-                        //         process.env.Bucket +
-                        //         '/' +
-                        //         `${file.path.replace(/\\/g, '/')}`
-                        // )
-                        imagePaths.push(
-                            `${req.protocol}://${
-                                process.env.Bucket
-                            }/${file.path.replace(/\\/g, '/')}`
-                        )
-                        return res.status(200).json({
-                            success: true,
-                            message: '-2:' + `${res}`,
-                        })
-                    } else {
-                        return res.status(404).json({
-                            success: false,
-                            message: '-1:' + `failed.`,
-                        })
-                    }
+                    // console.log(
+                    //     'Successfully uploaded data to ' +
+                    //         process.env.Bucket +
+                    //         '/' +
+                    //         `${file.path.replace(/\\/g, '/')}`
+                    // )
+                    imagePaths.push(
+                        `${req.protocol}://${
+                            process.env.Bucket
+                        }/${file.path.replace(/\\/g, '/')}`
+                    )
+                    return res.status(200).json({
+                        success: true,
+                        message: '-2:' + `${res}`,
+                    })
                 })
                 .catch((error) => {
                     // console.log(error)
@@ -353,28 +344,19 @@ router.post(`/`, async (req, res) => {
             })
             .promise()
             .then((res) => {
-                return res.send(res)
-
-                if (res) {
-                    // console.log(
-                    //     'Successfully uploaded data to ' +
-                    //         process.env.Bucket +
-                    //         '/' +
-                    //         `${file.path.replace(/\\/g, '/')}`
-                    // )
-                    imagePath = `${req.protocol}://${
-                        process.env.Bucket
-                    }/${file.path.replace(/\\/g, '/')}`
-                    return res.status(200).json({
-                        success: true,
-                        message: '1:' + `${res}`,
-                    })
-                } else {
-                    return res.status(404).json({
-                        success: false,
-                        message: '2:' + `failed.`,
-                    })
-                }
+                // console.log(
+                //     'Successfully uploaded data to ' +
+                //         process.env.Bucket +
+                //         '/' +
+                //         `${file.path.replace(/\\/g, '/')}`
+                // )
+                imagePath = `${req.protocol}://${
+                    process.env.Bucket
+                }/${file.path.replace(/\\/g, '/')}`
+                return res.status(200).json({
+                    success: true,
+                    message: '1:' + `${res}`,
+                })
             })
             .catch((error) => {
                 // console.log(error)
