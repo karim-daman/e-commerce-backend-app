@@ -287,7 +287,7 @@ router.post(`/`, async (req, res) => {
     //     // console.log(req.files.image[0].path)
     //     return res.status(400).send('No image in the request')
     // }
-    if (!req.body.image[0]) {
+    if (!req.body.image) {
         return res.status(400).send('No image in the request')
     }
 
