@@ -4,6 +4,8 @@ const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const mongoose = require('mongoose')
 const cors = require('cors')
+// const fs = require('@cyclic.sh/s3fs')(Process.env.Bucket)
+
 require('dotenv').config()
 
 var { expressjwt: jwt } = require('express-jwt')
@@ -15,8 +17,6 @@ app.options('*', cors()) // app.options(process.env.FrontEndURL, cors()) // to b
 app.use(bodyParser.json())
 app.use(morgan('tiny'))
 app.use('/public/uploads', express.static(__dirname + '/public/uploads'))
-// app.use(authJwt)
-// app.use(errorHandler)
 
 // routes
 const categoriesRoutes = require('./routes/categories')
