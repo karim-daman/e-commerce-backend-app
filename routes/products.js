@@ -3,7 +3,7 @@ const { Product } = require('../models/product')
 const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
-const multer = require('multer')
+// const multer = require('multer')
 const AWS = require('aws-sdk')
 const s3 = new AWS.S3()
 
@@ -13,23 +13,23 @@ const FILE_TYPE_MAP = {
     'image/jpg': 'jpg',
 }
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const isValid = FILE_TYPE_MAP[file.mimetype]
-        let uploadError = new Error('invalid image type')
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         const isValid = FILE_TYPE_MAP[file.mimetype]
+//         let uploadError = new Error('invalid image type')
 
-        if (isValid) uploadError = null
-        cb(uploadError, 'public/uploads')
-    },
-    filename: function (req, file, cb) {
-        const fileName = file.originalname.split(' ').join('_')
-        const extension = FILE_TYPE_MAP[file.mimetype]
-        // cb(null, `${fileName}_${Date.now()}.${extension}`)
-        cb(null, `${Date.now()}_${fileName}`)
-    },
-})
+//         if (isValid) uploadError = null
+//         cb(uploadError, 'public/uploads')
+//     },
+//     filename: function (req, file, cb) {
+//         const fileName = file.originalname.split(' ').join('_')
+//         const extension = FILE_TYPE_MAP[file.mimetype]
+//         // cb(null, `${fileName}_${Date.now()}.${extension}`)
+//         cb(null, `${Date.now()}_${fileName}`)
+//     },
+// })
 
-const uploadOptions = multer({ storage: storage })
+// const uploadOptions = multer({ storage: storage })
 
 router.get(`/`, async (req, res) => {
     // http://localhost:3000/api/v1/products?categories=2312,41241 //<- query
@@ -130,10 +130,10 @@ router.put(`/:id`, async (req, res) => {
 
 router.post(
     `/`,
-    uploadOptions.fields([
-        { name: 'image', maxCount: 1 },
-        { name: 'images', maxCount: 10 },
-    ]),
+    // uploadOptions.fields([
+    //     { name: 'image', maxCount: 1 },
+    //     { name: 'images', maxCount: 10 },
+    // ]),
     async (req, res) => {
         // if (!mongoose.isValidObjectId(req.params.id)) {
         //     res.status(400).send('invalid product id')
