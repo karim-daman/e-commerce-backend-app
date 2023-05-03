@@ -306,10 +306,6 @@ router.post(`/`, async (req, res) => {
                     Bucket: process.env.Bucket,
                     Key: `${file.path.replace(/\\/g, '/')}`,
                 })
-                .promise()
-                .then((res) => {
-                    res.json()
-                })
                 .then((res) => {
                     // console.log(
                     //     'Successfully uploaded data to ' +
@@ -344,10 +340,6 @@ router.post(`/`, async (req, res) => {
                 }),
                 Bucket: process.env.Bucket,
                 Key: `${file.path.replace(/\\/g, '/')}`,
-            })
-            .promise()
-            .then((res) => {
-                res.json()
             })
             .then((res) => {
                 // console.log(
