@@ -138,6 +138,7 @@ router.post(
         // if (!mongoose.isValidObjectId(req.params.id)) {
         //     res.status(400).send('invalid product id')
         // }
+        console.log(req.body.category)
         const category = await Category.findById(req.body.category)
         if (!category) return res.status(400).send('invalid category')
 
