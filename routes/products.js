@@ -4,6 +4,8 @@ const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 const multer = require('multer')
+const AWS = require('aws-sdk')
+const s3 = new AWS.S3()
 
 const FILE_TYPE_MAP = {
     'image/png': 'png',
@@ -139,25 +141,106 @@ router.post(
         const category = await Category.findById(req.body.category)
         if (!category) return res.status(400).send('invalid category')
 
-        const files = req.files.images
-        let imagePaths = []
-        if (files)
-            files.map((file) => {
-                imagePaths.push(
-                    `${req.protocol}://${req.get('host')}/${file.path.replace(
-                        /\\/g,
-                        '/'
-                    )}`
-                )
-            })
-
         if (!req.files.image[0].path) {
             console.log(req.files.image[0].path)
             return res.status(400).send('No image in the request')
         }
-        const imagePath = `${req.protocol}://${req.get(
-            'host'
-        )}/${req.files.image[0].path.replace(/\\/g, '/')}`
+
+        const files = req.files.images
+        const file = req.file.image[0]
+        let imagePaths = []
+
+        if (files)
+            files.map(async (file) => {
+                // store something
+                await s3
+                    .putObject({
+                        Body: JSON.stringify({
+                            key: `${file.path.replace(/\\/g, '/')}`,
+                        }),
+                        Bucket: process.env.Bucket,
+                        Key: `${file.path.replace(/\\/g, '/')}`,
+                    })
+                    .promise()
+                    .then((res) => {
+                        if (res) {
+                            console.log(
+                                'Successfully uploaded data to ' +
+                                    process.env.Bucket +
+                                    '/' +
+                                    `${file.path.replace(/\\/g, '/')}`
+                            )
+                            return res.status(200).json({
+                                success: true,
+                                message: `${res}`,
+                            })
+                        } else {
+                            return res.status(404).json({
+                                success: false,
+                                message: `failed.`,
+                            })
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                    })
+
+                // // get it back
+                // let my_file = await s3.getObject({
+                //     Bucket: "cyclic-cute-gold-cormorant-suit-eu-west-2",
+                //     Key: `${file.path.replace(
+                //         /\\/g,
+                //         '/'
+                //     )}`,
+                // }).promise()
+
+                // console.log(JSON.parse(my_file))
+
+                // imagePaths.push(
+                //     `${req.protocol}://${req.get('host')}/${file.path.replace(
+                //         /\\/g,
+                //         '/'
+                //     )}`
+                // )
+            })
+
+        // const imagePath = `${req.protocol}://${req.get(
+        //     'host'
+        // )}/${file.path.replace(/\\/g, '/')}`
+
+        if (file) {
+            await s3
+                .putObject({
+                    Body: JSON.stringify({
+                        key: `${file.path.replace(/\\/g, '/')}`,
+                    }),
+                    Bucket: process.env.Bucket,
+                    Key: `${file.path.replace(/\\/g, '/')}`,
+                })
+                .promise()
+                .then((res) => {
+                    if (res) {
+                        console.log(
+                            'Successfully uploaded data to ' +
+                                process.env.Bucket +
+                                '/' +
+                                `${file.path.replace(/\\/g, '/')}`
+                        )
+                        return res.status(200).json({
+                            success: true,
+                            message: `${res}`,
+                        })
+                    } else {
+                        return res.status(404).json({
+                            success: false,
+                            message: `failed.`,
+                        })
+                    }
+                })
+                .catch((error) => {
+                    console.log(error)
+                })
+        }
 
         let product = new Product({
             name: req.body.name,
