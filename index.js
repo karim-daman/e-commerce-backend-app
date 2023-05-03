@@ -14,11 +14,6 @@ app.use(cors())
 app.options('*', cors()) // app.options(process.env.FrontEndURL, cors()) // to be enabled in future
 
 //middleware
-app.use(
-    bodyParser.urlencoded({
-        extended: true,
-    })
-)
 app.use(bodyParser.json())
 app.use(morgan('tiny'))
 app.use('/public/uploads', express.static(__dirname + '/public/uploads'))
