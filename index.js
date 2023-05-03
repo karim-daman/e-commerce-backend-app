@@ -17,6 +17,7 @@ app.options('*', cors()) // app.options(process.env.FrontEndURL, cors()) // to b
 app.use(bodyParser.json())
 app.use(morgan('tiny'))
 // app.use('/public/uploads', express.static(__dirname + '/public/uploads'))
+
 fs.writeFileSync(
     '/public/uploads',
     express.static(__dirname + '/public/uploads')
