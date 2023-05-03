@@ -283,13 +283,16 @@ router.post(`/`, async (req, res) => {
             .status(400)
             .send({ message: 'invalid category', body: req.body })
 
-    if (!req.files.image[0].path) {
-        // console.log(req.files.image[0].path)
+    // if (!req.files.image[0]) {
+    //     // console.log(req.files.image[0].path)
+    //     return res.status(400).send('No image in the request')
+    // }
+    if (!req.body.image[0]) {
         return res.status(400).send('No image in the request')
     }
 
-    const files = req.files.images
-    const file = req.files.image[0]
+    const files = req.body.images
+    const file = req.body.image[0]
     let imagePaths = []
     let imagePath
 
