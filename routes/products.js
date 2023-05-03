@@ -398,7 +398,7 @@ router.post(`/`, async (req, res) => {
 
     product = await product.save()
     if (!product) return res(500).send('cannot create product.')
-    res(201).send(product)
+    res.send(product)
 })
 
 // router.put(
