@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const mongoose = require('mongoose')
 const cors = require('cors')
-const fs = require('@cyclic.sh/s3fs')(Process.env.Bucket)
+const fs = require('@cyclic.sh/s3fs')
 
 require('dotenv').config()
 
