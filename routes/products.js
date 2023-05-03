@@ -140,7 +140,8 @@ router.post(
         // }
         console.log(req.body.category)
         const category = await Category.findById(req.body.category)
-        if (!category) return res.status(400).send('invalid category')
+        // if (!category) return res.status(400).send('invalid category')
+        if (!category) return res.status(400).send(req.body)
 
         if (!req.files.image[0].path) {
             console.log(req.files.image[0].path)
