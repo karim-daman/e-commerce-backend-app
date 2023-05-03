@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const mongoose = require('mongoose')
 const cors = require('cors')
-const fs = require('@cyclic.sh/s3fs')
+// const fs = require('@cyclic.sh/s3fs')
 
 require('dotenv').config()
 
@@ -16,12 +16,7 @@ app.options('*', cors()) // app.options(process.env.FrontEndURL, cors()) // to b
 //middleware
 app.use(bodyParser.json())
 app.use(morgan('tiny'))
-// app.use('/public/uploads', express.static(__dirname + '/public/uploads'))
-
-fs.writeFileSync(
-    '/public/uploads',
-    express.static(__dirname + '/public/uploads')
-)
+app.use('/public/uploads', express.static(__dirname + '/public/uploads'))
 
 // routes
 const categoriesRoutes = require('./routes/categories')
