@@ -272,35 +272,35 @@ router.post(
     }
 )
 
-router.put(
-    `/gallery/:id`,
-    uploadOptions.array('images', 10),
-    async (req, res) => {
-        if (!mongoose.isValidObjectId(req.params.id)) {
-            res.status(400).send('invalid product id')
-        }
-        const files = req.files
-        let imagePaths = []
-        if (files)
-            files.map((file) => {
-                imagePaths.push(
-                    `${req.protocol}://${req.get('host')}/${file.path.replace(
-                        /\\/g,
-                        '/'
-                    )}`
-                )
-            })
-        const product = await Product.findByIdAndUpdate(
-            req.params.id,
-            {
-                images: imagePaths,
-            },
-            { new: true }
-        )
-        if (!product) return res.status(500).send('product cannot be updated!')
-        res.send(product)
-    }
-)
+// router.put(
+//     `/gallery/:id`,
+//     uploadOptions.array('images', 10),
+//     async (req, res) => {
+//         if (!mongoose.isValidObjectId(req.params.id)) {
+//             res.status(400).send('invalid product id')
+//         }
+//         const files = req.files
+//         let imagePaths = []
+//         if (files)
+//             files.map((file) => {
+//                 imagePaths.push(
+//                     `${req.protocol}://${req.get('host')}/${file.path.replace(
+//                         /\\/g,
+//                         '/'
+//                     )}`
+//                 )
+//             })
+//         const product = await Product.findByIdAndUpdate(
+//             req.params.id,
+//             {
+//                 images: imagePaths,
+//             },
+//             { new: true }
+//         )
+//         if (!product) return res.status(500).send('product cannot be updated!')
+//         res.send(product)
+//     }
+// )
 
 router.get(`/get/count`, async (req, res) => {
     const productCount = await Product.countDocuments()
