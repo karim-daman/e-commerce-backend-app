@@ -322,12 +322,12 @@ router.post(`/`, async (req, res) => {
                         )
                         return res.status(200).json({
                             success: true,
-                            message: `${res}`,
+                            message: '-2:' + `${res}`,
                         })
                     } else {
                         return res.status(404).json({
                             success: false,
-                            message: `failed.`,
+                            message: '-1:' + `failed.`,
                         })
                     }
                 })
@@ -335,7 +335,7 @@ router.post(`/`, async (req, res) => {
                     // console.log(error)
                     return res.status(404).json({
                         success: false,
-                        message: error,
+                        message: '0:' + error,
                     })
                 })
         })
@@ -363,12 +363,12 @@ router.post(`/`, async (req, res) => {
                     }/${file.path.replace(/\\/g, '/')}`
                     return res.status(200).json({
                         success: true,
-                        message: `${res}`,
+                        message: '1:' + `${res}`,
                     })
                 } else {
                     return res.status(404).json({
                         success: false,
-                        message: `failed.`,
+                        message: '2:' + `failed.`,
                     })
                 }
             })
@@ -376,7 +376,7 @@ router.post(`/`, async (req, res) => {
                 // console.log(error)
                 return res.status(404).json({
                     success: false,
-                    message: error,
+                    message: '3:' + error,
                 })
             })
     }
@@ -398,7 +398,7 @@ router.post(`/`, async (req, res) => {
 
     product = await product.save()
     if (!product) return res(500).send('cannot create product.')
-    res.send(product)
+    res(201).send(product)
 })
 
 // router.put(
