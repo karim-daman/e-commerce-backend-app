@@ -308,6 +308,8 @@ router.post(`/`, async (req, res) => {
                 })
                 .promise()
                 .then((res) => {
+                    return res.send(res)
+
                     if (res) {
                         // console.log(
                         //     'Successfully uploaded data to ' +
@@ -351,6 +353,8 @@ router.post(`/`, async (req, res) => {
             })
             .promise()
             .then((res) => {
+                return res.send(res)
+
                 if (res) {
                     // console.log(
                     //     'Successfully uploaded data to ' +
