@@ -19,7 +19,8 @@ const storage = multer.diskStorage({
         let uploadError = new Error('invalid image type')
 
         if (isValid) uploadError = null
-        cb(uploadError, 'public/uploads')
+        // cb(uploadError, 'public/uploads')
+        cb(uploadError, '')
     },
     filename: function (req, file, cb) {
         const fileName = file.originalname.split(' ').join('_')
@@ -170,6 +171,11 @@ router.post(
                                     '/' +
                                     `${file.path.replace(/\\/g, '/')}`
                             )
+                            imagePaths.push(
+                                `${req.protocol}://${
+                                    process.env.Bucket
+                                }/${file.path.replace(/\\/g, '/')}`
+                            )
                             return res.status(200).json({
                                 success: true,
                                 message: `${res}`,
@@ -226,6 +232,9 @@ router.post(
                                 '/' +
                                 `${file.path.replace(/\\/g, '/')}`
                         )
+                        filepath = `${req.protocol}://${
+                            process.env.Bucket
+                        }/${file.path.replace(/\\/g, '/')}`
                         return res.status(200).json({
                             success: true,
                             message: `${res}`,
