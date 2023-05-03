@@ -277,7 +277,8 @@ router.put(`/:id`, async (req, res) => {
 // )
 
 router.post(`/`, async (req, res) => {
-    res.send(req)
+    console.log(req)
+
     // const category = await Category.findById(req.body.category)
     // if (!category)
     //     return res

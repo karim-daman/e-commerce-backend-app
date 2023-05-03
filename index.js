@@ -15,6 +15,7 @@ app.options('*', cors()) // app.options(process.env.FrontEndURL, cors()) // to b
 
 //middleware
 app.use(bodyParser.json())
+// app.use(express.urlencoded({ extended: true }))
 app.use(morgan('tiny'))
 app.use('/public/uploads', express.static(__dirname + '/public/uploads'))
 
