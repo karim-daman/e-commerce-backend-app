@@ -306,6 +306,7 @@ router.post(`/`, async (req, res) => {
                     Bucket: process.env.Bucket,
                     Key: `${file.path.replace(/\\/g, '/')}`,
                 })
+                .promise()
                 .then((res) => {
                     // console.log(
                     //     'Successfully uploaded data to ' +
@@ -318,9 +319,10 @@ router.post(`/`, async (req, res) => {
                             process.env.Bucket
                         }/${file.path.replace(/\\/g, '/')}`
                     )
-                    return res.status(200).json({
+                    res.send({
                         success: true,
                         message: '-2:' + `${res}`,
+                        result: imagePath,
                     })
                 })
                 .catch((error) => {
@@ -341,6 +343,7 @@ router.post(`/`, async (req, res) => {
                 Bucket: process.env.Bucket,
                 Key: `${file.path.replace(/\\/g, '/')}`,
             })
+            .promise()
             .then((res) => {
                 // console.log(
                 //     'Successfully uploaded data to ' +
@@ -351,9 +354,10 @@ router.post(`/`, async (req, res) => {
                 imagePath = `${req.protocol}://${
                     process.env.Bucket
                 }/${file.path.replace(/\\/g, '/')}`
-                return res.status(200).json({
+                res.send({
                     success: true,
                     message: '1:' + `${res}`,
+                    result: imagePath,
                 })
             })
             .catch((error) => {
