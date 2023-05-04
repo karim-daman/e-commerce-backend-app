@@ -315,15 +315,16 @@ router.post(`/`, async (req, res) => {
                     //         `${file.path.replace(/\\/g, '/')}`
                     // )
                     imagePaths.push(
-                        `${req.protocol}://${
-                            process.env.Bucket
-                        }/${file.path.replace(/\\/g, '/')}`
+                        // `${req.protocol}://${
+                        //     process.env.Bucket
+                        // }/${file.path.replace(/\\/g, '/')}`
+                        'tmp'
                     )
-                    res.send({
-                        success: true,
-                        message: '-2:' + `${res}`,
-                        result: imagePath,
-                    })
+                    // res.send({
+                    //     success: true,
+                    //     message: '-2:' + `${res}`,
+                    //     result: imagePath,
+                    // })
                 })
                 .catch((error) => {
                     // console.log(error)
@@ -351,14 +352,18 @@ router.post(`/`, async (req, res) => {
                 //         '/' +
                 //         `${file.path.replace(/\\/g, '/')}`
                 // )
-                imagePath = `${req.protocol}://${
-                    process.env.Bucket
-                }/${file.path.replace(/\\/g, '/')}`
-                res.send({
-                    success: true,
-                    message: '1:' + `${res}`,
-                    result: imagePath,
-                })
+
+                imagePath = 'tmp'
+
+                // imagePath = `${req.protocol}://${
+                //     process.env.Bucket
+                // }/${file.path.replace(/\\/g, '/')}`
+
+                // res.send({
+                //     success: true,
+                //     message: '1:' + `${res}`,
+                //     result: imagePath,
+                // })
             })
             .catch((error) => {
                 // console.log(error)
