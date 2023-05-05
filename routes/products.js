@@ -1,38 +1,209 @@
+const { S3Client } = require('@aws-sdk/client-s3')
 const { Category } = require('../models/category')
 const { Product } = require('../models/product')
 const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 const multer = require('multer')
-const AWS = require('aws-sdk')
+const multerS3 = require('multer-s3')
 
-AWS.config.update({})
-
-const s3 = new AWS.S3()
-
-const FILE_TYPE_MAP = {
-    'image/png': 'png',
-    'image/jpeg': 'jpeg',
-    'image/jpg': 'jpg',
-}
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const isValid = FILE_TYPE_MAP[file.mimetype]
-        let uploadError = new Error('invalid image type')
-
-        if (isValid) uploadError = null
-        cb(uploadError, 'public/uploads')
+let s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        sessionToken: process.env.AWS_SESSION_TOKEN,
     },
-    filename: function (req, file, cb) {
-        const fileName = file.originalname.split(' ').join('_')
-        const extension = FILE_TYPE_MAP[file.mimetype]
-        // cb(null, `${fileName}_${Date.now()}.${extension}`)
-        cb(null, `${Date.now()}_${fileName}`)
-    },
+
+    sslEnabled: false,
+    s3ForcePathStyle: true,
+    signatureVersion: 'v4',
 })
 
-const uploadOptions = multer({ storage: storage })
+// const FILE_TYPE_MAP = {
+//     'image/png': 'png',
+//     'image/jpeg': 'jpeg',
+//     'image/jpg': 'jpg',
+// }
+
+// // function to sanitize files and send error for unsupported files
+// function sanitizeFile(file, cb) {
+//     // Define the allowed extension
+//     const fileExts = ['.png', '.jpg', '.jpeg', '.gif']
+
+//     // Check allowed extensions
+//     const isAllowedExt = fileExts.includes(
+//         path.extname(file.originalname.toLowerCase())
+//     )
+
+//     // Mime type must be an image
+//     const isAllowedMimeType = file.mimetype.startsWith('image/')
+
+//     if (isAllowedExt && isAllowedMimeType) {
+//         return cb(null, true) // no errors
+//     } else {
+//         // pass error msg to callback, which can be displaye in frontend
+//         cb('Error: File type not allowed!')
+//     }
+// }
+
+const upload = multer({
+    storage: multerS3({
+        s3: s3,
+        ACL: 'public-read',
+        bucket: process.env.Bucket,
+        metadata: (req, file, callBack) => {
+            callBack(null, { fieldName: file.fieldname })
+        },
+        key: (req, file, callBack) => {
+            var fullPath = 'uploads/' + file.originalname //If you want to save into a folder concat de name of the folder to the path
+            callBack(null, fullPath)
+        },
+    }),
+    // fileFilter: (req, file, callback) => {
+    //     sanitizeFile(file, callback)
+    // },
+    limits: {
+        fileSize: 1024 * 1024 * 2, // 2mb file size
+    },
+}).fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'images', maxCount: 10 },
+])
+
+// .fields([
+//     { name: 'image', maxCount: 1 },
+//     { name: 'images', maxCount: 10 },
+// ])
+
+router.post('/', upload, function (req, res, next) {
+    res.send({
+        message: 'Successfully uploaded files!',
+        log: req.files,
+    })
+
+    //     let product = new Product({
+    //         name: req.body.name,
+    //         description: req.body.description,
+    //         richDescription: req.body.richDescription,
+    //         image: imagePath,
+    //         images: imagePaths,
+    //         brand: req.body.brand,
+    //         price: req.body.price,
+    //         category: req.body.category,
+    //         countInStock: req.body.countInStock,
+    //         rating: req.body.rating,
+    //         numReviews: req.body.numReviews,
+    //         isFeatured: req.body.isFeatured,
+    //     })
+
+    //     product = await product.save()
+    //     if (!product) return res(500).send('cannot create product.')
+    //     res.send(product)
+})
+
+// router.post(`/`, upload, async (req, res) => {
+//     const category = await Category.findById(req.body.category)
+//     if (!category)
+//         return res
+//             .status(400)
+//             .send({ message: 'invalid category', body: req.body })
+
+//     if (!req.files.images[0]) {
+//         console.log(req.files.image[0])
+//         return res.status(400).send({
+//             message: 'No image in the request',
+//             log: req.files,
+//         })
+//     }
+
+//     const files = req.files.images
+//     const file = req.files.image[0]
+//     let imagePaths = []
+//     let imagePath
+
+//     if (files)
+//         files.map(async (file) => {
+//             await upload()
+//                 .promise()
+//                 .then((res) => {
+//                     if (res) {
+//                         console.log(
+//                             'Successfully uploaded data to ' +
+//                                 process.env.Bucket +
+//                                 '/' +
+//                                 `${file.location.replace(/\\/g, '/')}`
+//                         )
+//                         imagePaths.push(
+//                             `${req.protocol}://${
+//                                 process.env.Bucket
+//                             }/${file.location.replace(/\\/g, '/')}`
+//                         )
+//                         res.status(200).send({
+//                             success: true,
+//                             message: `${res}`,
+//                         })
+//                     } else {
+//                         return res.status(404).send({
+//                             success: false,
+//                             message: `failed.`,
+//                         })
+//                     }
+//                 })
+//                 .catch((error) => {
+//                     console.log(error)
+//                 })
+//         })
+
+//     if (file) {
+//         upload()
+//             .promise()
+//             .then((res) => {
+//                 if (res) {
+//                     console.log(
+//                         'Successfully uploaded data to ' +
+//                             process.env.Bucket +
+//                             '/' +
+//                             `${file.path.replace(/\\/g, '/')}`
+//                     )
+//                     imagePath = `${req.protocol}://${
+//                         process.env.Bucket
+//                     }/${file.path.replace(/\\/g, '/')}`
+//                     res.status(200).send({
+//                         success: true,
+//                         message: `${res}`,
+//                     })
+//                 } else {
+//                     return res.status(404).send({
+//                         success: false,
+//                         message: `failed.`,
+//                     })
+//                 }
+//             })
+//             .catch((error) => {
+//                 console.log(error)
+//             })
+//     }
+
+//     let product = new Product({
+//         name: req.body.name,
+//         description: req.body.description,
+//         richDescription: req.body.richDescription,
+//         image: imagePath,
+//         images: imagePaths,
+//         brand: req.body.brand,
+//         price: req.body.price,
+//         category: req.body.category,
+//         countInStock: req.body.countInStock,
+//         rating: req.body.rating,
+//         numReviews: req.body.numReviews,
+//         isFeatured: req.body.isFeatured,
+//     })
+
+//     product = await product.save()
+//     if (!product) return res(500).send('cannot create product.')
+//     res.send(product)
+// })
 
 router.get(`/`, async (req, res) => {
     // http://localhost:3000/api/v1/products?categories=2312,41241 //<- query
@@ -130,154 +301,6 @@ router.put(`/:id`, async (req, res) => {
 //     if (!product) return res(500).send('cannot create product.')
 //     res.send(product)
 // })
-
-router.post(
-    `/`,
-    uploadOptions.fields([
-        { name: 'image', maxCount: 1 },
-        { name: 'images', maxCount: 10 },
-    ]),
-    async (req, res) => {
-        // if (!mongoose.isValidObjectId(req.params.id)) {
-        //     res.status(400).send('invalid product id')
-        // }
-        console.log(req.body.category)
-        const category = await Category.findById(req.body.category)
-        if (!category)
-            return res
-                .status(400)
-                .send({ message: 'invalid category', body: req.body })
-
-        if (!req.files.image[0].path) {
-            console.log(req.files.image[0].path)
-            return res.status(400).send('No image in the request')
-        }
-
-        const files = req.files.images
-        const file = req.files.image[0]
-        let imagePaths = []
-        let imagePath
-
-        if (files)
-            files.map(async (file) => {
-                // store something
-                await s3
-                    .putObject({
-                        Body: JSON.stringify({
-                            key: `${file.path.replace(/\\/g, '/')}`,
-                        }),
-                        Bucket: process.env.Bucket,
-                        Key: `${file.path.replace(/\\/g, '/')}`,
-                    })
-                    .promise()
-                    .then((res) => {
-                        if (res) {
-                            console.log(
-                                'Successfully uploaded data to ' +
-                                    process.env.Bucket +
-                                    '/' +
-                                    `${file.path.replace(/\\/g, '/')}`
-                            )
-                            imagePaths.push(
-                                `${req.protocol}://${
-                                    process.env.Bucket
-                                }/${file.path.replace(/\\/g, '/')}`
-                            )
-                            return res.status(200).json({
-                                success: true,
-                                message: `${res}`,
-                            })
-                        } else {
-                            return res.status(404).json({
-                                success: false,
-                                message: `failed.`,
-                            })
-                        }
-                    })
-                    .catch((error) => {
-                        console.log(error)
-                    })
-
-                // // get it back
-                // let my_file = await s3.getObject({
-                //     Bucket: "cyclic-cute-gold-cormorant-suit-eu-west-2",
-                //     Key: `${file.path.replace(
-                //         /\\/g,
-                //         '/'
-                //     )}`,
-                // }).promise()
-
-                // console.log(JSON.parse(my_file))
-
-                // imagePaths.push(
-                //     `${req.protocol}://${req.get('host')}/${file.path.replace(
-                //         /\\/g,
-                //         '/'
-                //     )}`
-                // )
-            })
-
-        // const imagePath = `${req.protocol}://${req.get(
-        //     'host'
-        // )}/${file.path.replace(/\\/g, '/')}`
-
-        if (file) {
-            await s3
-                .putObject({
-                    Body: JSON.stringify({
-                        key: `${file.path.replace(/\\/g, '/')}`,
-                    }),
-                    Bucket: process.env.Bucket,
-                    Key: `${file.path.replace(/\\/g, '/')}`,
-                })
-                .promise()
-                .then((res) => {
-                    if (res) {
-                        console.log(
-                            'Successfully uploaded data to ' +
-                                process.env.Bucket +
-                                '/' +
-                                `${file.path.replace(/\\/g, '/')}`
-                        )
-                        imagePath = `${req.protocol}://${
-                            process.env.Bucket
-                        }/${file.path.replace(/\\/g, '/')}`
-                        return res.status(200).json({
-                            success: true,
-                            message: `${res}`,
-                        })
-                    } else {
-                        return res.status(404).json({
-                            success: false,
-                            message: `failed.`,
-                        })
-                    }
-                })
-                .catch((error) => {
-                    console.log(error)
-                })
-        }
-
-        let product = new Product({
-            name: req.body.name,
-            description: req.body.description,
-            richDescription: req.body.richDescription,
-            image: imagePath,
-            images: imagePaths,
-            brand: req.body.brand,
-            price: req.body.price,
-            category: req.body.category,
-            countInStock: req.body.countInStock,
-            rating: req.body.rating,
-            numReviews: req.body.numReviews,
-            isFeatured: req.body.isFeatured,
-        })
-
-        product = await product.save()
-        if (!product) return res(500).send('cannot create product.')
-        res.send(product)
-    }
-)
 
 // router.post(`/`, async (req, res) => {
 //     console.log(req)
