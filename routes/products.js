@@ -1,24 +1,103 @@
-const { S3Client } = require('@aws-sdk/client-s3')
 const { Category } = require('../models/category')
 const { Product } = require('../models/product')
 const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 const multer = require('multer')
-const multerS3 = require('multer-s3')
+// const { S3Client } = require('@aws-sdk/client-s3')
+// const multerS3 = require('multer-s3')
+const firebase = require('firebase/app')
+const {
+    getStorage,
+    ref,
+    getDownloadURL,
+    uploadBytesResumable,
+    uploadBytes,
+} = require('firebase/storage')
+const { log } = require('console')
+const { async } = require('@firebase/util')
 
-let s3 = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        sessionToken: process.env.AWS_SESSION_TOKEN,
-    },
+const firebaseConfig = {
+    apiKey: process.env.API_KEY,
+    authDomain: process.env.AUTH_DOMAIN,
+    projectId: process.env.PROJECT_ID,
+    databaseURL: process.env.FIRESTORE_DB_URL,
+    storageBucket: process.env.STORAGE_BUCKET,
+    messagingSenderId: process.env.MESSAGING_SENDER_ID,
+}
 
-    sslEnabled: false,
-    s3ForcePathStyle: true,
-    signatureVersion: 'v4',
-})
+firebase.initializeApp(firebaseConfig)
+
+const storage = getStorage()
+
+const upload = multer({ storage: multer.memoryStorage() })
+
+router.post(
+    '/',
+    upload.fields([
+        { name: 'image', maxCount: 1 },
+        { name: 'images', maxCount: 10 },
+    ]),
+
+    async (req, res) => {
+        try {
+            if (!req.files.images) {
+                res.json({ message: 'Images not found' })
+                return
+            }
+
+            let product = new Product()
+
+            const downloadUrls = await Promise.all(
+                req.files.images.map(async (file) => {
+                    const storageRef = ref(
+                        storage,
+                        `uploads/${product.id}/${file.originalname}`
+                    )
+                    await uploadBytes(storageRef, file.buffer)
+                    const downloadURL = await getDownloadURL(storageRef)
+                    return downloadURL
+                })
+            )
+
+            product.name = req.body.name
+            product.description = req.body.description
+            product.richDescription = req.body.richDescription
+            product.image = downloadUrls[0]
+            product.images = downloadUrls
+            product.brand = req.body.brand
+            product.price = req.body.price
+            product.category = req.body.category
+            product.countInStock = req.body.countInStock
+            product.rating = req.body.rating
+            product.numReviews = req.body.numReviews
+            product.isFeatured = req.body.isFeatured
+
+            product = await product.save()
+            if (!product) return res(500).send('cannot create product.')
+
+            res.send(JSON.stringify({ product }, null, 2))
+        } catch (err) {
+            console.error(err)
+            res.status(500).json({ message: 'Server error', log: err })
+        }
+    }
+)
+
+// Upload file and metadata to the object 'images/mountains.jpg'
+
+// let s3 = new S3Client({
+//     region: process.env.AWS_REGION,
+//     credentials: {
+//         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+//         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+//         sessionToken: process.env.AWS_SESSION_TOKEN,
+//     },
+
+//     sslEnabled: false,
+//     s3ForcePathStyle: true,
+//     signatureVersion: 'v4',
+// })
 
 // const FILE_TYPE_MAP = {
 //     'image/png': 'png',
@@ -42,65 +121,61 @@ let s3 = new S3Client({
 //     if (isAllowedExt && isAllowedMimeType) {
 //         return cb(null, true) // no errors
 //     } else {
+
 //         // pass error msg to callback, which can be displaye in frontend
 //         cb('Error: File type not allowed!')
 //     }
 // }
 
-const upload = multer({
-    storage: multerS3({
-        s3: s3,
-        ACL: 'public-read',
-        bucket: process.env.Bucket,
-        metadata: (req, file, callBack) => {
-            callBack(null, { fieldName: file.fieldname })
-        },
-        key: (req, file, callBack) => {
-            var fullPath = 'uploads/' + file.originalname //If you want to save into a folder concat de name of the folder to the path
-            callBack(null, fullPath)
-        },
-    }),
-    // fileFilter: (req, file, callback) => {
-    //     sanitizeFile(file, callback)
-    // },
-    limits: {
-        fileSize: 1024 * 1024 * 2, // 2mb file size
-    },
-}).fields([
-    { name: 'image', maxCount: 1 },
-    { name: 'images', maxCount: 10 },
-])
-
-// .fields([
+// const upload = multer({
+//     storage: multerS3({
+//         s3: s3,
+//         ACL: 'public-read',
+//         bucket: process.env.Bucket,
+//         metadata: (req, file, callBack) => {
+//             callBack(null, { fieldName: file.fieldname })
+//         },
+//         key: (req, file, callBack) => {
+//             var fullPath = 'uploads/' + file.originalname //If you want to save into a folder concat de name of the folder to the path
+//             callBack(null, fullPath)
+//         },
+//     }),
+//     // fileFilter: (req, file, callback) => {
+//     //     sanitizeFile(file, callback)
+//     // },
+//     limits: {
+//         fileSize: 1024 * 1024 * 2, // 2mb file size
+//     },
+// }).fields([
 //     { name: 'image', maxCount: 1 },
 //     { name: 'images', maxCount: 10 },
 // ])
 
-router.post('/', upload, function (req, res, next) {
-    res.send({
-        message: 'Successfully uploaded files!',
-        log: req.files,
-    })
+// router.post('/', upload, function (req, res, next) {
+//     res.send({
+//         message: 'Successfully uploaded files!',
+//         log: req.files,
+//     })
 
-    //     let product = new Product({
-    //         name: req.body.name,
-    //         description: req.body.description,
-    //         richDescription: req.body.richDescription,
-    //         image: imagePath,
-    //         images: imagePaths,
-    //         brand: req.body.brand,
-    //         price: req.body.price,
-    //         category: req.body.category,
-    //         countInStock: req.body.countInStock,
-    //         rating: req.body.rating,
-    //         numReviews: req.body.numReviews,
-    //         isFeatured: req.body.isFeatured,
-    //     })
+//     let product = new Product({
+//         name: req.body.name,
+//         description: req.body.description,
+//         richDescription: req.body.richDescription,
+//         image: imagePath,
+//         images: imagePaths,
+//         brand: req.body.brand,
+//         price: req.body.price,
+//         category: req.body.category,
+//         countInStock: req.body.countInStock,
+//         rating: req.body.rating,
+//         numReviews: req.body.numReviews,
+//         isFeatured: req.body.isFeatured,
+//     })
 
-    //     product = await product.save()
-    //     if (!product) return res(500).send('cannot create product.')
-    //     res.send(product)
-})
+//     product = await product.save()
+//     if (!product) return res(500).send('cannot create product.')
+//     res.send(product)
+// })
 
 // router.post(`/`, upload, async (req, res) => {
 //     const category = await Category.findById(req.body.category)
