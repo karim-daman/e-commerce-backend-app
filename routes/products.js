@@ -4,6 +4,7 @@ const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 const multer = require('multer')
+
 // const { S3Client } = require('@aws-sdk/client-s3')
 // const multerS3 = require('multer-s3')
 const firebase = require('firebase/app')
@@ -12,6 +13,7 @@ const {
     ref,
     getDownloadURL,
     uploadBytesResumable,
+    deleteObject,
     uploadBytes,
 } = require('firebase/storage')
 const { log } = require('console')
@@ -304,6 +306,40 @@ router.delete('/:id', (req, res) => {
     Product.findByIdAndRemove(req.params.id)
         .then((product) => {
             if (product) {
+                // ---------------------------------------------------------------
+
+                // Create a reference to the file to delete
+                product.images.forEach(async (file) => {
+                    const storage = getStorage()
+
+                    const httpsReference = ref(storage, file)
+                    const fileName = httpsReference.name
+                    const storageRef = ref(
+                        storage,
+                        `uploads/${product.id}/${fileName}`
+                    )
+
+                    console.log(
+                        ` deleting: 'uploads/${product.id}/${fileName}'`
+                    )
+
+                    // Delete the file
+                    await deleteObject(storageRef)
+                        .then(() => {
+                            // File deleted successfully
+                            console.log(
+                                `deleted '${fileName}' image for id: ` +
+                                    product.id
+                            )
+                        })
+                        .catch((error) => {
+                            // Uh-oh, an error occurred!
+                            console.log('error deleting: ' + error)
+                        })
+                })
+
+                // ---------------------------------------------------------------
+
                 return res.status(200).json({
                     success: true,
                     message: `${product.name} was deleted successfully.`,
