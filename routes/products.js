@@ -76,7 +76,7 @@ router.post(
             product = await product.save()
             if (!product) return res(500).send('cannot create product.')
 
-            res.send(JSON.stringify({ product }, null, 2))
+            res.send({ success: true, product })
         } catch (err) {
             console.error(err)
             res.status(500).json({ message: 'Server error', log: err })
