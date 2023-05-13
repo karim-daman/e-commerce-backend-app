@@ -32,6 +32,18 @@ router.put(`/:id`, async (req, res) => {
 })
 
 router.post(`/`, async (req, res) => {
+    let exists = false
+    const categoryList = await Category.find()
+    categoryList.map((item) => {
+        if (item.name == req.body.name) exists = true
+    })
+
+    if (exists) {
+        return res
+            .status(403)
+            .send({ success: false, message: 'category already exists.' })
+    }
+
     let category = new Category({
         name: req.body.name,
         icon: req.body.icon,
@@ -39,8 +51,12 @@ router.post(`/`, async (req, res) => {
     })
 
     category = await category.save()
-    if (!category) return res.status(404).send('category cannot be created!')
-    res.send(category)
+    if (!category) {
+        return res
+            .status(404)
+            .send({ success: false, message: 'category cannot be created!' })
+    }
+    res.send({ success: true, category })
 })
 
 //DELETE ...api/v1/2
