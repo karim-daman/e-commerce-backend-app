@@ -1,4 +1,5 @@
 const { User } = require('../models/user')
+const { Cart } = require('../models/cart')
 const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
@@ -64,7 +65,21 @@ router.post(`/register`, async (req, res) => {
 
     user = await user.save()
     if (!user) return res.status(404).send('user cannot be created!')
-    res.send(user)
+
+    let user_cart = await Cart.findOne({ user: user.id })
+    if (!user_cart)
+        user_cart = await new Cart({
+            cartItems: [],
+            shippingAddress1: 'undefined_address',
+            city: 'undefined_city',
+            zip: 'undefined_zipcode',
+            country: 'undefined_country',
+            phone: 'undefined_phone',
+            status: 'Pending',
+            user: user.id,
+        }).save()
+
+    res.send({ user: user, cart: user_cart })
 })
 
 router.post(`/login`, async (req, res) => {
@@ -72,11 +87,14 @@ router.post(`/login`, async (req, res) => {
 
     if (!user) return res.status(400).send('user not found.')
 
+    const user_cart = await Cart.findOne({ user: user.id })
+
     if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
         const token = jwt.sign(
             {
                 userId: user.id,
                 isAdmin: user.isAdmin,
+                cart: user_cart,
             },
             process.env.Secret,
             { expiresIn: '1d' }
