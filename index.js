@@ -22,6 +22,7 @@ const categoriesRoutes = require('./routes/categories')
 const productsRoutes = require('./routes/products')
 const usersRoutes = require('./routes/users')
 const cartsRoutes = require('./routes/carts')
+const reviewsRoutes = require('./routes/reviews')
 
 // routers
 const api = process.env.API_URI
@@ -39,18 +40,23 @@ app.use(
         },
     }).unless({
         path: [
-            { url: /\/public\/uploads(.*)/, methods: ['GET', 'OPTIONS'] },
+            // { url: /\/public\/uploads(.*)/, methods: ['GET', 'OPTIONS'] },
             { url: /\/api\/v1\/products(.*)/, methods: ['GET', 'OPTIONS'] },
             { url: /\/api\/v1\/categories(.*)/, methods: ['GET', 'OPTIONS'] },
             {
-                url: /\/api\/v1\/orders(.*)/,
-                methods: ['GET', 'OPTIONS', 'POST'],
+                url: /\/api\/v1\/reviews(.*)/,
+                methods: ['GET', 'OPTIONS', 'PUT'],
             },
+            // {
+            //     url: /\/api\/v1\/orders(.*)/,
+            //     methods: ['GET', 'OPTIONS', 'POST'],
+            // },
 
             `/`,
             `${api}`,
             `${api}/users/login`,
             `${api}/users/register`,
+            `${api}/users/verify`,
         ],
     })
 )
@@ -65,8 +71,9 @@ app.use(`${api}/categories`, categoriesRoutes)
 app.use(`${api}/products`, productsRoutes)
 app.use(`${api}/users`, usersRoutes)
 app.use(`${api}/carts`, cartsRoutes)
+app.use(`${api}/reviews`, reviewsRoutes)
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 5000
 
 const connectDB = async () => {
     try {

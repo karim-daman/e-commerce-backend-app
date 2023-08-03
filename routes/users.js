@@ -82,12 +82,53 @@ router.post(`/register`, async (req, res) => {
     res.send({ user: user, cart: user_cart })
 })
 
+router.post(`/verify`, async (req, res) => {
+    const token = req.headers.authorization
+
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided' })
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.Secret)
+
+        const currentTimestamp = Math.floor(Date.now() / 1000)
+        const remainingTime = decoded.exp - currentTimestamp
+
+        const hours = Math.floor(remainingTime / 3600)
+        const minutes = Math.floor((remainingTime % 3600) / 60)
+        const seconds = remainingTime % 60
+
+        if (currentTimestamp >= decoded.exp) {
+            return res.status(401).json({ error: 'Token has expired' })
+        }
+
+        res.json({
+            success: true,
+            message: 'Access granted',
+            remainingTime: { hours, minutes, seconds },
+        })
+    } catch (error) {
+        res.status(401).json({
+            success: false,
+            error: 'Invalid token',
+            token: req.headers.authorization,
+        })
+    }
+})
+
 router.post(`/login`, async (req, res) => {
     const user = await User.findOne({ email: req.body.email })
 
     if (!user) return res.status(400).send('user not found.')
 
-    const user_cart = await Cart.findOne({ user: user.id })
+    const user_cart = await Cart.findOne({ user: user.id }).populate({
+        path: 'cartItems',
+        populate: {
+            path: 'product',
+            select: 'id image brand price name',
+        },
+    })
 
     if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
         const token = jwt.sign(
