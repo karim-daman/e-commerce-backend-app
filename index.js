@@ -22,6 +22,7 @@ const categoriesRoutes = require('./routes/categories')
 const productsRoutes = require('./routes/products')
 const usersRoutes = require('./routes/users')
 const cartsRoutes = require('./routes/carts')
+const cartitemsRoutes = require('./routes/cart-items')
 const reviewsRoutes = require('./routes/reviews')
 
 // routers
@@ -43,6 +44,11 @@ app.use(
             // { url: /\/public\/uploads(.*)/, methods: ['GET', 'OPTIONS'] },
             { url: /\/api\/v1\/products(.*)/, methods: ['GET', 'OPTIONS'] },
             { url: /\/api\/v1\/categories(.*)/, methods: ['GET', 'OPTIONS'] },
+            {
+                url: /\/api\/v1\/cartitems(.*)/,
+                methods: ['GET', 'OPTIONS', 'DELETE'],
+            },
+
             {
                 url: /\/api\/v1\/reviews(.*)/,
                 methods: ['GET', 'OPTIONS', 'PUT'],
@@ -71,6 +77,7 @@ app.use(`${api}/categories`, categoriesRoutes)
 app.use(`${api}/products`, productsRoutes)
 app.use(`${api}/users`, usersRoutes)
 app.use(`${api}/carts`, cartsRoutes)
+app.use(`${api}/cartitems`, cartitemsRoutes)
 app.use(`${api}/reviews`, reviewsRoutes)
 
 const PORT = process.env.PORT || 5000

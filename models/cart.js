@@ -37,7 +37,7 @@ const cartSchema = mongoose.Schema({
         default: 'Pending',
     },
     totalPrice: {
-        type: Number,
+        type: mongoose.Schema.Types.Decimal128,
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -47,6 +47,13 @@ const cartSchema = mongoose.Schema({
     dateOrdered: {
         type: Date,
         default: Date.now,
+    },
+})
+
+cartSchema.set('toJSON', {
+    transform: (doc, ret) => {
+        ret.totalPrice = parseFloat(ret.totalPrice.toString())
+        return ret
     },
 })
 

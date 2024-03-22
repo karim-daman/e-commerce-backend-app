@@ -29,6 +29,19 @@ router.get(`/:id`, async (req, res) => {
             },
         })
 
+    // Calculate total price
+    let totalPrice = 0
+    for (let item of cart.cartItems) {
+        totalPrice += item.quantity * item.product.price
+    }
+
+    totalPrice = Math.round((totalPrice + Number.EPSILON) * 100) / 100
+
+    // Update total price in cart
+    cart.totalPrice = totalPrice
+
+    await cart.save()
+
     if (!cart) {
         res.status(500).json({ success: false })
     }
@@ -84,6 +97,17 @@ router.put('/:id', async (req, res) => {
             cart.cartItems.push(newCartItem)
             await newCartItem.save()
         }
+
+        // Calculate total price
+        let totalPrice = 0
+        for (let item of cart.cartItems) {
+            totalPrice += item.quantity * item.product.price
+        }
+
+        totalPrice = Math.round((totalPrice + Number.EPSILON) * 100) / 100
+
+        // Update total price in cart
+        cart.totalPrice = totalPrice
 
         await cart.save()
 
