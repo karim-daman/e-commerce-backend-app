@@ -51,7 +51,7 @@ app.use(
 
             {
                 url: /\/api\/v1\/reviews(.*)/,
-                methods: ['GET', 'OPTIONS', 'PUT'],
+                methods: ['GET', 'POST', 'OPTIONS', 'PUT'],
             },
             // {
             //     url: /\/api\/v1\/orders(.*)/,
