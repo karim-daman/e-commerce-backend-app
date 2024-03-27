@@ -47,13 +47,16 @@ router.put(`/`, async (req, res) => {
 })
 
 router.post(`/`, async (req, res) => {
+    let user = await User.findById(req.body.user_id).select('name')
     let review = new Review({
         product_id: req.body.product_id,
         user_id: req.body.user_id,
+        user_name: user.name, // Extract only the name
         heart: req.body.heart,
         rating: req.body.rating,
         comment: req.body.comment,
     })
+
     review = await review.save()
     res.send(review) // Optional: Send the created review as a response
 })
