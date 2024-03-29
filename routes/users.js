@@ -120,7 +120,10 @@ router.post(`/verify`, async (req, res) => {
 router.post(`/login`, async (req, res) => {
     const user = await User.findOne({ email: req.body.email })
 
-    if (!user) return res.status(400).send('user not found.')
+    if (!user)
+        return res
+            .status(400)
+            .send({ success: false, messsage: 'user not found.' })
 
     const user_cart = await Cart.findOne({ user: user.id }).populate({
         path: 'cartItems',
@@ -140,9 +143,9 @@ router.post(`/login`, async (req, res) => {
             process.env.Secret,
             { expiresIn: '1d' }
         )
-        res.status(200).send({ user: user.email, token: token })
+        res.status(200).send({ success: true, user: user.email, token: token })
     } else {
-        res.status(400).send('wrong credentials.')
+        res.status(400).send({ success: false, messsage: 'wrong credentials.' })
     }
 })
 
