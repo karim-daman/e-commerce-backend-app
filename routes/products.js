@@ -156,30 +156,63 @@ router.delete('/:id', (req, res) => {
         })
 })
 
+// router.put(`/:id`, async (req, res) => {
+//     if (!mongoose.isValidObjectId(req.params.id)) {
+//         res.status(400).send('invalid product id')
+//     }
+//     const category = await Category.findById(req.body.category)
+//     if (!category) return res.status(400).send('invalid category')
+
+//     const product = await Product.findByIdAndUpdate(
+//         req.params.id,
+//         {
+//             name: req.body.name,
+//             description: req.body.description,
+//             richDescription: req.body.richDescription,
+//             image: req.body.image,
+//             brand: req.body.brand,
+//             price: req.body.price,
+//             category: req.body.category,
+//             countInStock: req.body.countInStock,
+//             rating: req.body.rating,
+//             numReviews: req.body.numReviews,
+//             isFeatured: req.body.isFeatured,
+//         },
+//         { new: true }
+//     )
+//     if (!product) return res.status(500).send('product cannot be updated!')
+//     res.send(product)
+// })
+
 router.put(`/:id`, async (req, res) => {
     if (!mongoose.isValidObjectId(req.params.id)) {
-        res.status(400).send('invalid product id')
+        return res.status(400).send('invalid product id')
     }
+
     const category = await Category.findById(req.body.category)
     if (!category) return res.status(400).send('invalid category')
 
+    const updatedProduct = {
+        richDescription: req.body.richDescription || '', // Update richDescription if provided
+        image: req.body.image || '', // Update image if provided
+        images: req.body.images || [], // Update images if provided
+        brand: req.body.brand || '', // Update brand if provided
+        price: req.body.price || 0, // Update price if provided
+        rating: req.body.rating || 0, // Update rating if provided
+        numReviews: req.body.numReviews || 0, // Update numReviews if provided
+        isFeatured: req.body.isFeatured || false, // Update isFeatured if provided
+        name: req.body.name || '', // Update name if provided
+        description: req.body.description || '', // Update description if provided
+        category: req.body.category || '', // Update category if provided
+        countInStock: req.body.countInStock || 0, // Update countInStock if provided
+    }
+
     const product = await Product.findByIdAndUpdate(
         req.params.id,
-        {
-            name: req.body.name,
-            description: req.body.description,
-            richDescription: req.body.richDescription,
-            image: req.body.image,
-            brand: req.body.brand,
-            price: req.body.price,
-            category: req.body.category,
-            countInStock: req.body.countInStock,
-            rating: req.body.rating,
-            numReviews: req.body.numReviews,
-            isFeatured: req.body.isFeatured,
-        },
+        updatedProduct,
         { new: true }
     )
+
     if (!product) return res.status(500).send('product cannot be updated!')
     res.send(product)
 })
