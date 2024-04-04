@@ -192,19 +192,22 @@ router.put(`/:id`, async (req, res) => {
     const category = await Category.findById(req.body.category)
     if (!category) return res.status(400).send('invalid category')
 
+    const origianlProduct = await Product.findById(req.body.id)
+
     const updatedProduct = {
-        richDescription: req.body.richDescription || '', // Update richDescription if provided
-        image: req.body.image || '', // Update image if provided
-        images: req.body.images || [], // Update images if provided
-        brand: req.body.brand || '', // Update brand if provided
-        price: req.body.price || 0, // Update price if provided
-        rating: req.body.rating || 0, // Update rating if provided
-        numReviews: req.body.numReviews || 0, // Update numReviews if provided
-        isFeatured: req.body.isFeatured || false, // Update isFeatured if provided
-        name: req.body.name || '', // Update name if provided
-        description: req.body.description || '', // Update description if provided
-        category: req.body.category || '', // Update category if provided
-        countInStock: req.body.countInStock || 0, // Update countInStock if provided
+        richDescription:
+            req.body.richDescription || origianlProduct.richDescription,
+        image: req.body.image || origianlProduct.image,
+        images: req.body.images || origianlProduct.images,
+        brand: req.body.brand || origianlProduct.brand,
+        price: req.body.price || origianlProduct.price,
+        rating: req.body.rating || origianlProduct.rating,
+        numReviews: req.body.numReviews || origianlProduct.numReviews,
+        isFeatured: req.body.isFeatured,
+        name: req.body.name || origianlProduct.name,
+        description: req.body.description || origianlProduct.description,
+        category: req.body.category || origianlProduct.category,
+        countInStock: req.body.countInStock || origianlProduct.countInStock,
     }
 
     const product = await Product.findByIdAndUpdate(
@@ -214,7 +217,7 @@ router.put(`/:id`, async (req, res) => {
     )
 
     if (!product) return res.status(500).send('product cannot be updated!')
-    res.send(product)
+    res.send({ success: true, product })
 })
 
 router.get(`/get/count`, async (req, res) => {
