@@ -24,6 +24,7 @@ const usersRoutes = require('./routes/users')
 const cartsRoutes = require('./routes/carts')
 const cartitemsRoutes = require('./routes/cart-items')
 const reviewsRoutes = require('./routes/reviews')
+const likesRoutes = require('./routes/likes')
 
 // routers
 const api = process.env.API_URI
@@ -48,11 +49,11 @@ app.use(
                 url: /\/api\/v1\/cartitems(.*)/,
                 methods: ['GET', 'OPTIONS', 'DELETE'],
             },
-
             {
                 url: /\/api\/v1\/reviews(.*)/,
                 methods: ['GET', 'POST', 'OPTIONS', 'PUT'],
             },
+
             // {
             //     url: /\/api\/v1\/orders(.*)/,
             //     methods: ['GET', 'OPTIONS', 'POST'],
@@ -79,6 +80,7 @@ app.use(`${api}/users`, usersRoutes)
 app.use(`${api}/carts`, cartsRoutes)
 app.use(`${api}/cartitems`, cartitemsRoutes)
 app.use(`${api}/reviews`, reviewsRoutes)
+app.use(`${api}/likes`, likesRoutes)
 
 const PORT = process.env.PORT || 5000
 
