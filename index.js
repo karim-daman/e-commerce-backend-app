@@ -50,6 +50,14 @@ app.use(
                 methods: ['GET', 'OPTIONS', 'DELETE'],
             },
             {
+                url: /\/api\/v1\/carts(.*)/,
+                methods: ['GET', 'PUT'],
+            },
+            {
+                url: /\/api\/v1\/likes(.*)/,
+                methods: ['GET', 'PUT'],
+            },
+            {
                 url: /\/api\/v1\/reviews(.*)/,
                 methods: ['GET', 'POST', 'OPTIONS', 'PUT'],
             },

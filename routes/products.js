@@ -226,6 +226,37 @@ router.get(`/get/count`, async (req, res) => {
     res.send({ productCount: productCount })
 })
 
+router.get(`/get/brands`, async (req, res) => {
+    try {
+        const brandsWithCounts = await Product.aggregate([
+            {
+                $group: {
+                    _id: '$brand', // Group by the "brand" field
+                    count: { $sum: 1 }, // Count the occurrences of each brand
+                },
+            },
+            {
+                $match: {
+                    _id: { $ne: null }, // Exclude null values
+                },
+            },
+            {
+                $project: {
+                    _id: 0, // Exclude the "_id" field from the results
+                    brand: '$_id', // Rename "_id" to "brand" in the output
+                    count: 1, // Include the "count" field in the output
+                },
+            },
+        ])
+
+        res.status(200).json(brandsWithCounts)
+    } catch (error) {
+        // Handle error
+        console.error('Error fetching brands with counts:', error)
+        res.status(500).json({ error: 'Could not fetch brands with counts' })
+    }
+})
+
 router.get(`/get/featured/`, async (req, res) => {
     const products = await Product.find({ isFeatured: true })
     if (!products) res.status(500).json({ success: false })
