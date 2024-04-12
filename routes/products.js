@@ -257,6 +257,42 @@ router.get(`/get/brands`, async (req, res) => {
     }
 })
 
+router.get(`/get/categories`, async (req, res) => {
+    try {
+        const categoriesWithCounts = await Product.aggregate([
+            {
+                $group: {
+                    _id: '$category', // Group by the "category" field
+                    count: { $sum: 1 }, // Count the occurrences of each category
+                },
+            },
+            {
+                $lookup: {
+                    from: 'categories', // The name of the categories collection
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'category_info',
+                },
+            },
+            {
+                $project: {
+                    _id: 0, // Exclude the "_id" field from the results
+                    category: { $arrayElemAt: ['$category_info.name', 0] }, // Get the category name
+                    count: 1, // Include the "count" field in the output
+                },
+            },
+        ])
+
+        res.status(200).json(categoriesWithCounts)
+    } catch (error) {
+        // Handle error
+        console.error('Error fetching categories with counts:', error)
+        res.status(500).json({
+            error: 'Could not fetch categories with counts',
+        })
+    }
+})
+
 router.get(`/get/featured/`, async (req, res) => {
     const products = await Product.find({ isFeatured: true })
     if (!products) res.status(500).json({ success: false })
