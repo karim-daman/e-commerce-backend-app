@@ -277,7 +277,7 @@ router.get(`/get/categories`, async (req, res) => {
             {
                 $project: {
                     _id: 0, // Exclude the "_id" field from the results
-                    category: { $arrayElemAt: ['$category_info.name', 0] }, // Get the category name
+                    name: { $arrayElemAt: ['$category_info.name', 0] }, // Get the category name
                     count: 1, // Include the "count" field in the output
                 },
             },
