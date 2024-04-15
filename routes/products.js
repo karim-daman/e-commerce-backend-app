@@ -243,7 +243,7 @@ router.get(`/get/brands`, async (req, res) => {
             {
                 $project: {
                     _id: 0, // Exclude the "_id" field from the results
-                    brand: '$_id', // Rename "_id" to "brand" in the output
+                    name: '$_id', // Rename "_id" to "brand" in the output
                     count: 1, // Include the "count" field in the output
                 },
             },
