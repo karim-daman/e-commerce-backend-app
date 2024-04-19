@@ -47,7 +47,9 @@ router.post(`/`, async (req, res) => {
 router.post(`/register`, async (req, res) => {
     const checkExistance = await User.findOne({ email: req.body.email })
     if (checkExistance) {
-        return res.status(400).send('user already has an account.')
+        return res
+            .status(400)
+            .send({ success: false, message: 'user already has an account.' })
     }
 
     let user = new User({
@@ -64,7 +66,10 @@ router.post(`/register`, async (req, res) => {
     })
 
     user = await user.save()
-    if (!user) return res.status(404).send('user cannot be created!')
+    if (!user)
+        return res
+            .status(404)
+            .send({ success: false, message: 'user cannot be created!' })
 
     let user_cart = await Cart.findOne({ user: user.id })
     if (!user_cart)
@@ -79,7 +84,7 @@ router.post(`/register`, async (req, res) => {
             user: user.id,
         }).save()
 
-    res.send({ user: user, cart: user_cart })
+    res.send({ success: true, user: user, cart: user_cart })
 })
 
 router.post(`/verify`, async (req, res) => {
