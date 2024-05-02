@@ -24,9 +24,20 @@ const reviewSchema = new mongoose.Schema({
         text: {
             type: String,
         },
+
+        reply: [{ type: String }],
+
         updated_at: {
             type: Date,
             default: Date.now,
+        },
+
+        numberoflikes: {
+            type: Number,
+        },
+
+        ndislikes: {
+            type: Number,
         },
     },
     created_at: {
